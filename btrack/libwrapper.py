@@ -23,11 +23,11 @@ import ctypes
 import logging
 import numpy as np
 
-import utils
-import constants
+from . import utils
+from . import constants
 
-from btypes import PyTrackObject, PyTrackingInfo
-from optimise import hypothesis
+from .btypes import PyTrackObject, PyTrackingInfo
+from .optimise import hypothesis
 
 
 
@@ -77,7 +77,7 @@ def load_library(filename):
         logging warning if windows is used
     """
 
-    if not isinstance(filename, basestring):
+    if not isinstance(filename, str):
         raise TypeError('Filename must be a string')
 
     lib_file, ext = os.path.splitext(filename)

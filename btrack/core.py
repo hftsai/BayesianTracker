@@ -24,11 +24,11 @@ import ctypes
 import logging
 import numpy as np
 
-import utils
-import constants
-import btypes
+from . import utils
+from . import constants
+from . import btypes
 
-from optimise import hypothesis, optimiser
+from .optimise import hypothesis, optimiser
 
 from datetime import datetime
 from collections import OrderedDict
@@ -105,7 +105,7 @@ def timeit(func, *args):
 
 
 # get a reference to the library
-import libwrapper
+from . import libwrapper
 lib = libwrapper.LibraryWrapper.lib
 
 class BayesianTracker(object):
@@ -280,14 +280,14 @@ class BayesianTracker(object):
     def tracks(self):
         """ Return a sorted list of tracks, default is to sort by increasing
         length """
-        return self.__sort( [self[i] for i in xrange(self.n_tracks)] )
+        return self.__sort( [self[i] for i in range(self.n_tracks)] )
 
     @property
     def refs(self):
         """ Return tracks as a list of IDs (essentially pointers) to the
         original objects. Use this to write out HDF5 tracks. """
         tracks = []
-        for i in xrange(self.n_tracks):
+        for i in range(self.n_tracks):
             # get the track length
             n = lib.track_length(self.__engine, i)
 
@@ -310,7 +310,7 @@ class BayesianTracker(object):
         """
         vol = np.zeros((3,2),dtype='float')
         lib.get_volume(self.__engine, vol)
-        return [tuple(vol[i,:].tolist()) for i in xrange(3)]+[self.frame_range]
+        return [tuple(vol[i,:].tolist()) for i in range(3)]+[self.frame_range]
 
     @property
     def motion_model(self):
@@ -327,7 +327,7 @@ class BayesianTracker(object):
             TypeError is cannot determine the type of motion model
         """
 
-        if isinstance(new_model, basestring):
+        if isinstance(new_model, str):
             # load from the models directory
             model_fn = os.path.join(BTRACK_PATH,'models/',new_model)
             model = utils.read_motion_model(model_fn)
@@ -365,7 +365,7 @@ class BayesianTracker(object):
             TypeError if cannot determine the type of motion model
         """
 
-        if isinstance(new_model, basestring):
+        if isinstance(new_model, str):
             if not new_model: return
             # load from the models directory
             model_fn = os.path.join(BTRACK_PATH,'models/',new_model)
@@ -504,7 +504,7 @@ class BayesianTracker(object):
             self.hypothesis_model, self.frame_range[0], self.frame_range[1])
 
         # now get all of the hypotheses
-        h = [lib.get_hypothesis(self.__engine, h) for h in xrange(n_hypotheses)]
+        h = [lib.get_hypothesis(self.__engine, h) for h in range(n_hypotheses)]
         return h
 
 

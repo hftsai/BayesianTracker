@@ -28,8 +28,8 @@ import json
 import logging
 
 # import core
-import btypes
-import constants
+from . import btypes
+from . import constants
 
 from collections import OrderedDict
 from scipy.io import savemat
@@ -170,7 +170,7 @@ def read_motion_model(filename):
     with open(filename, 'r') as j:
         modelfile = json.load(j)
 
-        if 'MotionModel' not in modelfile.keys():
+        if 'MotionModel' not in list(modelfile.keys()):
             raise ValueError('Not a valid motion model file')
 
         m = modelfile['MotionModel']
@@ -243,7 +243,7 @@ def read_object_model(filename):
     with open(filename, 'r') as j:
         modelfile = json.load(j)
 
-        if 'ObjectModel' not in modelfile.keys():
+        if 'ObjectModel' not in list(modelfile.keys()):
             raise ValueError('Not a valid object model file')
 
         m = modelfile['ObjectModel']
@@ -278,7 +278,7 @@ def fate_table(tracks):
 
     fate_table = {}
     for t in tracks:
-        if t.fate_label not in fate_table.keys():
+        if t.fate_label not in list(fate_table.keys()):
             fate_table[t.fate_label] = [t.ID]
         else:
             fate_table[t.fate_label].append(t.ID)
@@ -300,7 +300,7 @@ def export(filename, tracks):
 
     """
 
-    if not isinstance(filename, basestring):
+    if not isinstance(filename, str):
         raise TypeError('Filename must be a string')
 
     # try to infer the file format from the extension
@@ -337,7 +337,7 @@ def export_JSON(filename, tracks):
 
     # make a list of all track object data, sorted by track ID
     d = {"Tracklet_"+str(trk.ID):trk.to_dict() for trk in tracks}
-    json_export = OrderedDict(sorted(d.items(), key=lambda t: t[1]['ID']))
+    json_export = OrderedDict(sorted(list(d.items()), key=lambda t: t[1]['ID']))
 
     with open(filename, 'w') as json_file:
         json.dump(json_export, json_file, indent=2, separators=(',', ': '))
@@ -387,8 +387,8 @@ def export_HDF(filename, tracks, dummies=[]):
         if not os.path.exists(filename):
             raise IOError('HDF5 file does not exist: {0:s}'.format(filename))
 
-        if not isinstance(tracks[0][0], (int, long)):
-            print type(tracks[0][0]), tracks[0][0]
+        if not isinstance(tracks[0][0], int):
+            print(type(tracks[0][0]), tracks[0][0])
             raise TypeError('Track references should be integers')
 
 
@@ -401,7 +401,7 @@ def export_HDF(filename, tracks, dummies=[]):
 
     elif check_track_type(tracks):
         # we have a list of tracklet objects
-        print 'oops!'
+        print('oops!')
 
     else:
         raise TypeError('Tracks is of an unknown format.')
@@ -459,7 +459,7 @@ class HDF5_FileHandler(object):
 
 
         lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
-        frms = sorted(self._hdf['frames'].keys(), key=lambda_frm)
+        frms = sorted(list(self._hdf['frames'].keys()), key=lambda_frm)
 
 
         for frm in frms:
@@ -470,7 +470,7 @@ class HDF5_FileHandler(object):
                 labels = self._hdf['frames'][frm]['labels']
                 assert txyz.shape[0] == labels.shape[0]
 
-            for o in xrange(txyz.shape[0]):
+            for o in range(txyz.shape[0]):
                 if labels is not None:
                     class_label = labels[o,:]
                 else:
@@ -537,7 +537,7 @@ def ID_from_name(name):
     'Object_203622' returns 203622
     """
 
-    if not isinstance(name, basestring):
+    if not isinstance(name, str):
         raise TypError('object name must be of type string')
 
     m = re.search('(?<=_)\d+',name)
@@ -549,7 +549,7 @@ def name_from_ID(ID):
     203622 returns 'Object_203622'
     """
 
-    if not isinstance(ID, (int, long)):
+    if not isinstance(ID, int):
         raise TypeError('object name must be of type integer')
 
     return 'object_{0:d}'.format(ID)
@@ -599,14 +599,14 @@ def import_JSON_observations(filename, labeller=None):
         objects = json.load(json_file)
 
         itern = 0
-        object_IDs = objects.keys()
+        object_IDs = list(objects.keys())
 
         while objects:
             ID = object_IDs.pop()
             obj = objects.pop(ID)
             trk_obj = btypes.PyTrackObject()
             trk_obj.ID = ID_from_name(ID)
-            for param in obj.keys():
+            for param in list(obj.keys()):
                 if param == 'probability':
                     # TODO(arl): clean this up. prob need to change JSON
                     # writer to prevent this outcome rather than fix here
@@ -633,11 +633,11 @@ def import_ThunderSTORM(filename, pixels_2_nm=115.):
 
     with open(filename, 'rb') as csvfile:
         localisations = csv.reader(csvfile, delimiter=',', quotechar='"')
-        header = localisations.next()
+        header = next(localisations)
 
 
         to_use = ('frame', 'x [nm]', 'y [nm]', 'z [nm]')
-        cols = [i for i in xrange(len(header)) if header[i] in to_use]
+        cols = [i for i in range(len(header)) if header[i] in to_use]
 
         logger.info('Found: {0:s}'.format(', '.join([header[c] for c in cols])))
 
